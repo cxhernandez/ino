@@ -1,19 +1,29 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from setuptools import setup
 
 install_requires = open("requirements.txt").read().split('\n')
 readme_content = open("README.rst").read()
 
+extra = {}
+if sys.version_info >= (3, 0):
+    extra.update(
+        use_2to3=True,
+    )
+
+
 def gen_data_files(package_dir, subdir):
     import os.path
     results = []
     for root, dirs, files in os.walk(os.path.join(package_dir, subdir)):
-        results.extend([os.path.join(root, f)[len(package_dir)+1:] for f in files])
+        results.extend([os.path.join(root, f)[len(package_dir)+1:]
+                        for f in files])
     return results
 
-ino_package_data = gen_data_files('ino', 'make') + gen_data_files('ino', 'templates')
+ino_package_data = (gen_data_files('ino', 'make') +
+                    gen_data_files('ino', 'templates'))
 
 setup(
     name='ino',
@@ -37,4 +47,5 @@ setup(
         "Programming Language :: Python",
         "Topic :: Software Development :: Embedded Systems",
     ],
+    **extra
 )
