@@ -3,7 +3,6 @@
 import sys
 import os.path
 import fnmatch
-import functools
 
 from ino.utils import FileMap, SpaceList
 
@@ -24,12 +23,12 @@ class GlobFile(object):
         return self.filename
 
 
-def filter(f):
+def _filter(f):
     f.filter = True
     return f
 
 
-@filter
+@_filter
 def glob(dir, *patterns, **kwargs):
     recursive = kwargs.get('recursive', True)
     subdir = kwargs.get('subdir', '')
@@ -51,7 +50,7 @@ def glob(dir, *patterns, **kwargs):
     return result
 
 
-@filter
+@_filter
 def pjoin(base, *parts):
     return os.path.join(str(base), *map(str, parts))
 
@@ -62,41 +61,42 @@ def xname(filepath, basename_fmt):
     return os.path.join(head, basename_fmt % basename)
 
 
-@filter
+@_filter
 def objname(filepath):
     return xname(filepath, '%s.o')
 
 
-@filter
+@_filter
 def libname(filepath):
     return xname(filepath, 'lib%s.a')
 
 
-@filter
+@_filter
 def depsname(filepath):
     return xname(filepath, '%s.d')
 
 
-basename = filter(os.path.basename)
-dirname = filter(os.path.dirname)
-relative_to = filter(os.path.relpath)
+basename = _filter(os.path.basename)
+dirname = _filter(os.path.dirname)
+relative_to = _filter(os.path.relpath)
 
 
-@filter
+@_filter
 def filemap(sources, target_dir, rename_rule):
-    return FileMap((source, GlobFile(xname(source, rename_rule), target_dir)) 
+    return FileMap((source, GlobFile(xname(source, rename_rule), target_dir))
                    for source in sources)
 
-@filter
+
+@_filter
 def libmap(source_dirs, target_dir):
     return FileMap((
-        source_dir, 
-        GlobFile(libname(basename(source_dir)), 
+        source_dir,
+        GlobFile(libname(basename(source_dir)),
                  pjoin(target_dir, basename(source_dir))))
         for source_dir in source_dirs)
 
 
-@filter
+@_filter
 def colorize(s, color):
     if not sys.stdout.isatty():
         return s
@@ -111,7 +111,7 @@ def colorize(s, color):
     }
 
     return ''.join([
-        '\033[', ccodes[color], 'm', 
+        '\033[', ccodes[color], 'm',
         s,
         '\033[0m'
     ])
